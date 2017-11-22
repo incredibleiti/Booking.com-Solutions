@@ -1,0 +1,21 @@
+<?php
+
+const ESCAPE_TOKEN = -128;
+
+$input = file_get_contents("php://stdin");
+$values = explode(" ", $input);
+
+$result = array();
+$prev = $values[0];
+$result[] = $prev;
+$num_vals = count($values);
+for ($i=1; $i<$num_vals; $i++) {
+    $diff = $values[$i] - $prev;
+    if (abs($diff) > 127) {
+        $result[] = ESCAPE_TOKEN;
+    }
+    $result[] = $diff;
+    $prev = $values[$i];
+
+}
+fwrite(STDOUT, implode(" ", $result));

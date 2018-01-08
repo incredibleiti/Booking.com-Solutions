@@ -1,0 +1,144 @@
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.TreeMap;
+// These guys are needed for searching and counting how many times the word appears in review
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+public class Mentions {
+	// Let's create a HashSet to store the words we want to find
+	static HashSet<String> wordsToSearch = new HashSet<String>();
+	// The final HashMap, it will include hotel IDs and mentions
+	static Map<Integer,Integer> hotels = new HashMap<Integer,Integer>();
+	
+	private static String[] createDummyData(){
+		String[] dummyData = {
+				// First line,space-separated set of words
+				"price accommodation view low best",
+				// Second line, one integer which is the number of reviews
+				"4",
+				// From this point, we need to have as many hotel IDs and Reviews as we defined in the line above
+				// Hotel ID->1
+				"1", 
+				// Review for Hotel ID->1
+				"Do not make a reservation in this hotel even if has low low low price low price",
+				// Hotel ID->2
+				"2",
+				// Review for Hotel ID->1
+				"Great view and accommodation, best option for the price price price",				
+				// Hotel ID->3
+				"3",
+				// Review for Hotel ID->3
+				"Great view and accommodation, best option for the price",
+				// Hotel ID->4
+				"4",
+				// Review for Hotel ID->4
+				"Best option for the price price price price"
+		};		
+		return dummyData;
+	}
+	private static void fillWordsToSearch(String[] words){
+		for(int i=0; i<words.length; i++){
+			String word = words[i];
+			// Add to our HashSet
+			wordsToSearch.add( word.toLowerCase() );
+		}		
+	}
+	private static void fillHotels(Integer totalReviews, String[] reviews){		
+		for (int i=1; i<=(totalReviews*2); i+=2){
+			int hotelId = Integer.parseInt( reviews[i+1] );
+			int hotelReviews = countWords( reviews[i+2] );			
+			hotels.put( hotelId, hotelReviews );
+		}
+	}
+	private static Map<Integer, Integer> sortHotelsByReviews(final Map<Integer, Integer> map) {
+        Comparator<Integer> valueComparator =  new Comparator<Integer>() {
+            public int compare(Integer k1, Integer k2) {
+                int compare = map.get(k2).compareTo(map.get(k1));
+                if (compare == 0) return 1;
+                else return compare;
+            }
+        };
+        Map<Integer, Integer> sortedByValues = new TreeMap<Integer, Integer>(valueComparator);
+        sortedByValues.putAll(map);
+        return sortedByValues;
+    }
+	private static void showHotelList(){		
+		Map<Integer,Integer> sortedHotels = sortHotelsByReviews(hotels);		
+		for(Integer hotelId : sortedHotels.keySet() ){
+			System.out.println( "Hotel ID->" + hotelId + ", reviews " + hotels.get(hotelId) );
+		}
+	}
+	private static int countWords(String review){
+		int counter = 0;		
+		for(String word : wordsToSearch ){
+			Pattern pattern = Pattern.compile(word);
+			Matcher matcher = pattern.matcher(review.toLowerCase());
+			while( matcher.find() ){
+				counter++;
+			}
+		}				
+		return counter;
+	}
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		// If line arguments are empty, let's create some dummy data
+		if( args.length==0 ){
+			args = createDummyData();
+		}
+		// Fill HashSet
+		String[] words = args[0].split(" ");
+		fillWordsToSearch(words);		
+		int totalReviews = Integer.parseInt(args[1]);
+		fillHotels( totalReviews, args );
+		showHotelList();				
+	}
+
+}
+
+
+
+//--------------------------------------------------------------------------------------------------------
+
+import java.util.*;
+
+public class HotelReviews {
+
+    public static void main(String[] args) {
+
+        List<String> query = new ArrayList(Arrays.asList("good", "shit"));
+        TreeSet<Rating> chart = new TreeSet();
+        Map<Integer, List<String>> reviews = new HashMap();
+        reviews.put(1, new ArrayList(Arrays.asList("good", "great", "awesome", "good")));
+        reviews.put(2, new ArrayList(Arrays.asList("nasty", "shit", "disgusting")));
+        reviews.put(3, new ArrayList(Arrays.asList("moderate", "good", "shit")));
+
+        for(Map.Entry<Integer, List<String>> entry : reviews.entrySet()){
+            List<String> description = new ArrayList(entry.getValue());
+            description.retainAll(query);
+            chart.add(new Rating(entry.getKey(), description.size()));
+        }
+
+        for(Rating rating : chart){
+            System.out.println("hotel: " + rating.hotelId + ", rating: " + rating.rating);
+        }
+
+    }
+
+    static class Rating implements Comparable{
+        int hotelId;
+        int rating;
+        public Rating(int hotelId, int rating){
+            this.hotelId = hotelId;
+            this.rating = rating;
+        }
+
+        public int compareTo(Object other){
+            Rating otherRating = (Rating) other;
+            return 2 * Integer.compare(otherRating.rating, this.rating) + Integer.compare(this.hotelId, otherRating.hotelId);
+        }
+    }
+
+}

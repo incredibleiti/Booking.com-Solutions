@@ -38,6 +38,7 @@ public class Mentions {
 				"Best option for the price price price price"
 		};		
 		return dummyData;
+		//Return this data
 	}
 	private static void fillWordsToSearch(String[] words){
 		for(int i=0; i<words.length; i++){

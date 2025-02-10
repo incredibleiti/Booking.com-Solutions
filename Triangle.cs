@@ -9,3 +9,4 @@
         else
             return 0;
     }
+// new solution in leetcode foldee
